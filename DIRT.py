@@ -10,7 +10,7 @@ from torch.nn import functional as f
 from sentence_transformers import SentenceTransformer
 from torch.utils.data import DataLoader
 from datasets import Dataset
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 DATA_PATH = "Z:/Code/item-response-theory/project/data"
 CSV_NAME = "Fraction_23.csv"
@@ -35,9 +35,6 @@ def LoadItemContent(encoder: str) -> torch.Tensor:
     items_raw = list(item_content["Item Content"])
     item_embeddings = torch.Tensor(item_encoder.encode(items_raw))
     return item_embeddings
-
-
-
 
 
 # the deep irt model requires a custom activation function
@@ -205,7 +202,7 @@ if __name__ == "__main__":
 
     # thetas are not part of the dataloader
     # because they are a separate parameter being estimated
-    # theta = InitThetas(item_responses.shape[1])
+    theta = InitThetas(item_responses.shape[1])
     train_dataloader = prepare_dataloader(item_responses, item_embeddings)
 
 
@@ -214,7 +211,7 @@ if __name__ == "__main__":
     val_dataloader = train_dataloader
     irt_model = Deep_IRT(
         # TODO: move to config in wandb
-        # thetas=theta,
+        thetas=theta,
         loss=nn.BCELoss(),
         lr=config["lr"],
         weight_decay=config["weight_decay"],
